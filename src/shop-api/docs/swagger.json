@@ -1,0 +1,1439 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API магазина бытовой техники",
+        "title": "Shop API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Shop API Support"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/auth": {
+            "post": {
+                "description": "Проверяет пару email/пароль через сервис авторизации и возвращает JWT-токен.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Аутентификация пользователя",
+                "parameters": [
+                    {
+                        "description": "Учётные данные",
+                        "name": "creds",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Токен выдан",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректное тело или ошибка валидации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неверные учётные данные",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервиса авторизации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients": {
+            "get": {
+                "description": "Возвращает список клиентов. Опционально фильтруется по имени и фамилии и поддерживает пагинацию.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Получить список клиентов",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Имя клиента",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Фамилия клиента",
+                        "name": "surname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Лимит",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список клиентов (пустой массив, если ничего не найдено)",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.ClientResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт нового клиента вместе с адресом.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Добавить клиента",
+                "parameters": [
+                    {
+                        "description": "Данные клиента",
+                        "name": "client",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateClientRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Клиент создан",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ClientResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректное тело запроса или ошибка валидации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/{id}": {
+            "delete": {
+                "description": "Удаляет клиента и связанный с ним адрес.",
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Удалить клиента",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID клиента",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Клиент удалён"
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Клиент не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/{id}/address": {
+            "patch": {
+                "description": "Заменяет адрес клиента на новый.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Изменить адрес клиента",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID клиента",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый адрес",
+                        "name": "address",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Адрес обновлён",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный UUID или тело запроса",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Клиент не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/images": {
+            "post": {
+                "description": "Принимает multipart/form-data: product_id (UUID) и файл image.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Загрузить изображение для товара",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID товара",
+                        "name": "product_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Файл изображения",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Изображение загружено",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ImageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный product_id или пустое изображение",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Товар не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/images/{id}": {
+            "get": {
+                "description": "Возвращает бинарный поток изображения. Файл скачивается автоматически.",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Получить изображение по id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID изображения",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Бинарные данные изображения",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Изображение не найдено",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Заменяет байты изображения по его id.",
+                "consumes": [
+                    "application/octet-stream"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Изменить изображение",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID изображения",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новые байты изображения",
+                        "name": "image",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Изображение обновлено",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный UUID или пустое тело",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Изображение не найдено",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "images"
+                ],
+                "summary": "Удалить изображение",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID изображения",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Изображение удалено"
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Изображение не найдено",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products": {
+            "get": {
+                "description": "Возвращает товары с available_stock \u003e 0. Поддерживает пагинацию.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Получить все доступные товары",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Лимит",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список товаров (пустой массив, если нет доступных)",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.ProductResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт товар. Если категории с таким именем нет — она создаётся.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Добавить товар",
+                "parameters": [
+                    {
+                        "description": "Товар",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Товар создан",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректное тело запроса или ошибка валидации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Получить товар по id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Товар найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Товар не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "products"
+                ],
+                "summary": "Удалить товар",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Товар удалён"
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Товар не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/image": {
+            "get": {
+                "description": "Возвращает бинарный поток изображения, привязанного к товару. Файл скачивается автоматически.",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "images"
+                ],
+                "summary": "Получить изображение товара",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Бинарные данные изображения",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Изображение не найдено",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}/stock": {
+            "patch": {
+                "description": "Уменьшает available_stock на указанное число. Возвращает 400, если товара недостаточно.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Уменьшить количество товара",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID товара",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Сколько вычесть",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.DecreaseStockRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Остаток обновлён",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Недостаточно товара, некорректный UUID или тело",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Товар не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Создаёт нового пользователя через сервис авторизации и возвращает JWT-токен.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Регистрация пользователя",
+                "parameters": [
+                    {
+                        "description": "Данные пользователя",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Пользователь создан, токен выдан",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректное тело или ошибка валидации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь с таким email уже существует",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервиса авторизации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/reset": {
+            "post": {
+                "description": "Запускает процедуру сброса пароля через сервис авторизации.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Восстановление пароля",
+                "parameters": [
+                    {
+                        "description": "Email пользователя",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Запрос принят",
+                        "schema": {
+                            "$ref": "#/definitions/dto.StatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректное тело",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервиса авторизации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/suppliers": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "suppliers"
+                ],
+                "summary": "Получить всех поставщиков",
+                "responses": {
+                    "200": {
+                        "description": "Список поставщиков (пустой массив, если ничего нет)",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.SupplierResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт поставщика вместе с адресом.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "suppliers"
+                ],
+                "summary": "Добавить поставщика",
+                "parameters": [
+                    {
+                        "description": "Поставщик",
+                        "name": "supplier",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateSupplierRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Поставщик создан",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SupplierResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректное тело запроса или ошибка валидации",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/suppliers/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "suppliers"
+                ],
+                "summary": "Получить поставщика по id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID поставщика",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Поставщик найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SupplierResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Поставщик не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет поставщика и его адрес. Если на поставщика ссылаются товары — операция завершится ошибкой 500.",
+                "tags": [
+                    "suppliers"
+                ],
+                "summary": "Удалить поставщика",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID поставщика",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Поставщик удалён"
+                    },
+                    "400": {
+                        "description": "Некорректный UUID",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Поставщик не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/suppliers/{id}/address": {
+            "patch": {
+                "description": "Заменяет адрес поставщика на новый.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "suppliers"
+                ],
+                "summary": "Изменить адрес поставщика",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID поставщика",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый адрес",
+                        "name": "address",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Адрес обновлён",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный UUID или тело запроса",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Поставщик не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.AddressDTO": {
+            "type": "object",
+            "required": [
+                "city",
+                "country",
+                "street"
+            ],
+            "properties": {
+                "city": {
+                    "description": "Город",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Moscow"
+                },
+                "country": {
+                    "description": "Страна",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Russia"
+                },
+                "street": {
+                    "description": "Улица и номер дома",
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "example": "Tverskaya 1"
+                }
+            }
+        },
+        "dto.ClientResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Адрес клиента",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.AddressDTO"
+                        }
+                    ]
+                },
+                "birthday": {
+                    "description": "Дата рождения в формате YYYY-MM-DD",
+                    "type": "string",
+                    "example": "1990-05-15"
+                },
+                "client_name": {
+                    "description": "Имя клиента",
+                    "type": "string",
+                    "example": "Ivan"
+                },
+                "client_surname": {
+                    "description": "Фамилия клиента",
+                    "type": "string",
+                    "example": "Ivanov"
+                },
+                "gender": {
+                    "description": "Пол",
+                    "type": "string",
+                    "example": "male"
+                },
+                "id": {
+                    "description": "Уникальный идентификатор клиента",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "registration_date": {
+                    "description": "Дата регистрации в формате RFC3339",
+                    "type": "string",
+                    "example": "2024-01-01T12:00:00Z"
+                }
+            }
+        },
+        "dto.CreateClientRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "birthday",
+                "client_name",
+                "client_surname",
+                "gender"
+            ],
+            "properties": {
+                "address": {
+                    "description": "Адрес клиента",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.AddressDTO"
+                        }
+                    ]
+                },
+                "birthday": {
+                    "description": "Дата рождения в формате YYYY-MM-DD",
+                    "type": "string",
+                    "example": "1990-05-15"
+                },
+                "client_name": {
+                    "description": "Имя клиента",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Ivan"
+                },
+                "client_surname": {
+                    "description": "Фамилия клиента",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Ivanov"
+                },
+                "gender": {
+                    "description": "Пол: male, female или other",
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female",
+                        "other"
+                    ],
+                    "example": "male"
+                }
+            }
+        },
+        "dto.CreateProductRequest": {
+            "type": "object",
+            "required": [
+                "category",
+                "name",
+                "price",
+                "supplier_id"
+            ],
+            "properties": {
+                "available_stock": {
+                    "description": "Количество на складе",
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 10
+                },
+                "category": {
+                    "description": "Название категории (если её нет, будет создана)",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Fridges"
+                },
+                "name": {
+                    "description": "Название товара",
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "example": "Bosch KGN39"
+                },
+                "price": {
+                    "description": "Цена",
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 49999.99
+                },
+                "supplier_id": {
+                    "description": "UUID поставщика",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "dto.CreateSupplierRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "name",
+                "phone_number"
+            ],
+            "properties": {
+                "address": {
+                    "description": "Адрес поставщика",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.AddressDTO"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "Название поставщика",
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "example": "Bosch"
+                },
+                "phone_number": {
+                    "description": "Телефон",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5,
+                    "example": "+7-800-555-35-35"
+                }
+            }
+        },
+        "dto.DecreaseStockRequest": {
+            "type": "object",
+            "required": [
+                "amount"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "На сколько уменьшить остаток",
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "dto.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "Текст ошибки",
+                    "type": "string",
+                    "example": "invalid request body"
+                }
+            }
+        },
+        "dto.ImageResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "UUID изображения",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "product_id": {
+                    "description": "UUID товара, к которому привязано изображение",
+                    "type": "string",
+                    "example": "660e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "description": "Email пользователя",
+                    "type": "string",
+                    "example": "test@example.com"
+                },
+                "password": {
+                    "description": "Пароль",
+                    "type": "string",
+                    "example": "secret123"
+                }
+            }
+        },
+        "dto.ProductResponse": {
+            "type": "object",
+            "properties": {
+                "available_stock": {
+                    "description": "Количество на складе",
+                    "type": "integer",
+                    "example": 10
+                },
+                "category": {
+                    "description": "Категория",
+                    "type": "string",
+                    "example": "Fridges"
+                },
+                "id": {
+                    "description": "Уникальный идентификатор товара",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "image_id": {
+                    "description": "UUID изображения (может отсутствовать)",
+                    "type": "string"
+                },
+                "last_update_date": {
+                    "description": "Дата последнего изменения остатка в формате RFC3339",
+                    "type": "string",
+                    "example": "2024-01-01T12:00:00Z"
+                },
+                "name": {
+                    "description": "Название товара",
+                    "type": "string",
+                    "example": "Bosch KGN39"
+                },
+                "price": {
+                    "description": "Цена",
+                    "type": "number",
+                    "example": 49999.99
+                },
+                "supplier_id": {
+                    "description": "UUID поставщика",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "dto.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "phone",
+                "surname"
+            ],
+            "properties": {
+                "email": {
+                    "description": "Email пользователя",
+                    "type": "string",
+                    "example": "test@example.com"
+                },
+                "name": {
+                    "description": "Имя",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Ivan"
+                },
+                "password": {
+                    "description": "Пароль (минимум 6 символов)",
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "secret123"
+                },
+                "phone": {
+                    "description": "Телефон",
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5,
+                    "example": "+79001234567"
+                },
+                "surname": {
+                    "description": "Фамилия",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Ivanov"
+                }
+            }
+        },
+        "dto.ResetRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "description": "Email пользователя",
+                    "type": "string",
+                    "example": "test@example.com"
+                }
+            }
+        },
+        "dto.StatusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "dto.SupplierResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Адрес поставщика",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.AddressDTO"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "Уникальный идентификатор поставщика",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "name": {
+                    "description": "Название поставщика",
+                    "type": "string",
+                    "example": "Bosch"
+                },
+                "phone_number": {
+                    "description": "Телефон",
+                    "type": "string",
+                    "example": "+7-800-555-35-35"
+                }
+            }
+        },
+        "dto.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "description": "JWT-токен",
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIs..."
+                },
+                "user_id": {
+                    "description": "UUID пользователя",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "dto.UpdateAddressRequest": {
+            "type": "object",
+            "required": [
+                "city",
+                "country",
+                "street"
+            ],
+            "properties": {
+                "city": {
+                    "description": "Город",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Moscow"
+                },
+                "country": {
+                    "description": "Страна",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Russia"
+                },
+                "street": {
+                    "description": "Улица и номер дома",
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "example": "Tverskaya 1"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "JWT-токен в формате \"Bearer \u003ctoken\u003e\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

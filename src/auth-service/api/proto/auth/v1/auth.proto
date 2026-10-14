@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "auth-service/api/proto/auth/v1;authpb";
+
+service AuthService {
+rpc Register (RegisterRequest) returns (TokenResponse);
+rpc Login (LoginRequest) returns (TokenResponse);
+rpc ChangePassword (ChangePasswordRequest) returns (Empty);
+rpc ResetPassword (ResetPasswordRequest) returns (Empty);
+rpc VerifyToken (VerifyTokenRequest) returns (VerifyResponse);
+}
+
+message RegisterRequest {
+string email = 1;
+string name = 2;
+string surname = 3;
+string phone = 4;
+string password = 5;
+}
+
+message LoginRequest {
+string email = 1;
+string password = 2;
+}
+
+message ChangePasswordRequest {
+string user_id = 1;
+string old_password = 2;
+string new_password = 3;
+}
+
+message ResetPasswordRequest {
+string email = 1;
+}
+
+message VerifyTokenRequest {
+string token = 1;
+}
+
+message TokenResponse {
+string token = 1;
+string user_id = 2;
+}
+
+message VerifyResponse {
+bool valid = 1;
+string user_id = 2;
+string email = 3;
+}
+
+message Empty {}
+
+

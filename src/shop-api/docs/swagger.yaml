@@ -1,0 +1,996 @@
+basePath: /api/v1
+definitions:
+  dto.AddressDTO:
+    properties:
+      city:
+        description: Город
+        example: Moscow
+        maxLength: 100
+        minLength: 1
+        type: string
+      country:
+        description: Страна
+        example: Russia
+        maxLength: 100
+        minLength: 1
+        type: string
+      street:
+        description: Улица и номер дома
+        example: Tverskaya 1
+        maxLength: 200
+        minLength: 1
+        type: string
+    required:
+    - city
+    - country
+    - street
+    type: object
+  dto.ClientResponse:
+    properties:
+      address:
+        allOf:
+        - $ref: '#/definitions/dto.AddressDTO'
+        description: Адрес клиента
+      birthday:
+        description: Дата рождения в формате YYYY-MM-DD
+        example: "1990-05-15"
+        type: string
+      client_name:
+        description: Имя клиента
+        example: Ivan
+        type: string
+      client_surname:
+        description: Фамилия клиента
+        example: Ivanov
+        type: string
+      gender:
+        description: Пол
+        example: male
+        type: string
+      id:
+        description: Уникальный идентификатор клиента
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      registration_date:
+        description: Дата регистрации в формате RFC3339
+        example: "2024-01-01T12:00:00Z"
+        type: string
+    type: object
+  dto.CreateClientRequest:
+    properties:
+      address:
+        allOf:
+        - $ref: '#/definitions/dto.AddressDTO'
+        description: Адрес клиента
+      birthday:
+        description: Дата рождения в формате YYYY-MM-DD
+        example: "1990-05-15"
+        type: string
+      client_name:
+        description: Имя клиента
+        example: Ivan
+        maxLength: 100
+        minLength: 1
+        type: string
+      client_surname:
+        description: Фамилия клиента
+        example: Ivanov
+        maxLength: 100
+        minLength: 1
+        type: string
+      gender:
+        description: 'Пол: male, female или other'
+        enum:
+        - male
+        - female
+        - other
+        example: male
+        type: string
+    required:
+    - address
+    - birthday
+    - client_name
+    - client_surname
+    - gender
+    type: object
+  dto.CreateProductRequest:
+    properties:
+      available_stock:
+        description: Количество на складе
+        example: 10
+        minimum: 0
+        type: integer
+      category:
+        description: Название категории (если её нет, будет создана)
+        example: Fridges
+        maxLength: 100
+        minLength: 1
+        type: string
+      name:
+        description: Название товара
+        example: Bosch KGN39
+        maxLength: 200
+        minLength: 1
+        type: string
+      price:
+        description: Цена
+        example: 49999.99
+        minimum: 0
+        type: number
+      supplier_id:
+        description: UUID поставщика
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - category
+    - name
+    - price
+    - supplier_id
+    type: object
+  dto.CreateSupplierRequest:
+    properties:
+      address:
+        allOf:
+        - $ref: '#/definitions/dto.AddressDTO'
+        description: Адрес поставщика
+      name:
+        description: Название поставщика
+        example: Bosch
+        maxLength: 200
+        minLength: 1
+        type: string
+      phone_number:
+        description: Телефон
+        example: +7-800-555-35-35
+        maxLength: 20
+        minLength: 5
+        type: string
+    required:
+    - address
+    - name
+    - phone_number
+    type: object
+  dto.DecreaseStockRequest:
+    properties:
+      amount:
+        description: На сколько уменьшить остаток
+        example: 1
+        type: integer
+    required:
+    - amount
+    type: object
+  dto.ErrorResponse:
+    properties:
+      error:
+        description: Текст ошибки
+        example: invalid request body
+        type: string
+    type: object
+  dto.ImageResponse:
+    properties:
+      id:
+        description: UUID изображения
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      product_id:
+        description: UUID товара, к которому привязано изображение
+        example: 660e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        description: Email пользователя
+        example: test@example.com
+        type: string
+      password:
+        description: Пароль
+        example: secret123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.ProductResponse:
+    properties:
+      available_stock:
+        description: Количество на складе
+        example: 10
+        type: integer
+      category:
+        description: Категория
+        example: Fridges
+        type: string
+      id:
+        description: Уникальный идентификатор товара
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image_id:
+        description: UUID изображения (может отсутствовать)
+        type: string
+      last_update_date:
+        description: Дата последнего изменения остатка в формате RFC3339
+        example: "2024-01-01T12:00:00Z"
+        type: string
+      name:
+        description: Название товара
+        example: Bosch KGN39
+        type: string
+      price:
+        description: Цена
+        example: 49999.99
+        type: number
+      supplier_id:
+        description: UUID поставщика
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        description: Email пользователя
+        example: test@example.com
+        type: string
+      name:
+        description: Имя
+        example: Ivan
+        maxLength: 100
+        minLength: 1
+        type: string
+      password:
+        description: Пароль (минимум 6 символов)
+        example: secret123
+        minLength: 6
+        type: string
+      phone:
+        description: Телефон
+        example: "+79001234567"
+        maxLength: 20
+        minLength: 5
+        type: string
+      surname:
+        description: Фамилия
+        example: Ivanov
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - phone
+    - surname
+    type: object
+  dto.ResetRequest:
+    properties:
+      email:
+        description: Email пользователя
+        example: test@example.com
+        type: string
+    required:
+    - email
+    type: object
+  dto.StatusResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  dto.SupplierResponse:
+    properties:
+      address:
+        allOf:
+        - $ref: '#/definitions/dto.AddressDTO'
+        description: Адрес поставщика
+      id:
+        description: Уникальный идентификатор поставщика
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        description: Название поставщика
+        example: Bosch
+        type: string
+      phone_number:
+        description: Телефон
+        example: +7-800-555-35-35
+        type: string
+    type: object
+  dto.TokenResponse:
+    properties:
+      token:
+        description: JWT-токен
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+      user_id:
+        description: UUID пользователя
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  dto.UpdateAddressRequest:
+    properties:
+      city:
+        description: Город
+        example: Moscow
+        maxLength: 100
+        minLength: 1
+        type: string
+      country:
+        description: Страна
+        example: Russia
+        maxLength: 100
+        minLength: 1
+        type: string
+      street:
+        description: Улица и номер дома
+        example: Tverskaya 1
+        maxLength: 200
+        minLength: 1
+        type: string
+    required:
+    - city
+    - country
+    - street
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Shop API Support
+  description: REST API магазина бытовой техники
+  termsOfService: http://swagger.io/terms/
+  title: Shop API
+  version: "1.0"
+paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: Проверяет пару email/пароль через сервис авторизации и возвращает
+        JWT-токен.
+      parameters:
+      - description: Учётные данные
+        in: body
+        name: creds
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Токен выдан
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+        "400":
+          description: Некорректное тело или ошибка валидации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Неверные учётные данные
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Ошибка сервиса авторизации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Аутентификация пользователя
+      tags:
+      - auth
+  /clients:
+    get:
+      description: Возвращает список клиентов. Опционально фильтруется по имени и
+        фамилии и поддерживает пагинацию.
+      parameters:
+      - description: Имя клиента
+        in: query
+        name: name
+        type: string
+      - description: Фамилия клиента
+        in: query
+        name: surname
+        type: string
+      - description: Лимит
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список клиентов (пустой массив, если ничего не найдено)
+          schema:
+            items:
+              $ref: '#/definitions/dto.ClientResponse'
+            type: array
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получить список клиентов
+      tags:
+      - clients
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового клиента вместе с адресом.
+      parameters:
+      - description: Данные клиента
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateClientRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Клиент создан
+          schema:
+            $ref: '#/definitions/dto.ClientResponse'
+        "400":
+          description: Некорректное тело запроса или ошибка валидации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Добавить клиента
+      tags:
+      - clients
+  /clients/{id}:
+    delete:
+      description: Удаляет клиента и связанный с ним адрес.
+      parameters:
+      - description: UUID клиента
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Клиент удалён
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Клиент не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Удалить клиента
+      tags:
+      - clients
+  /clients/{id}/address:
+    patch:
+      consumes:
+      - application/json
+      description: Заменяет адрес клиента на новый.
+      parameters:
+      - description: UUID клиента
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Новый адрес
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Адрес обновлён
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "400":
+          description: Некорректный UUID или тело запроса
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Клиент не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Изменить адрес клиента
+      tags:
+      - clients
+  /images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'Принимает multipart/form-data: product_id (UUID) и файл image.'
+      parameters:
+      - description: UUID товара
+        in: formData
+        name: product_id
+        required: true
+        type: string
+      - description: Файл изображения
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Изображение загружено
+          schema:
+            $ref: '#/definitions/dto.ImageResponse'
+        "400":
+          description: Некорректный product_id или пустое изображение
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Товар не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Загрузить изображение для товара
+      tags:
+      - images
+  /images/{id}:
+    delete:
+      parameters:
+      - description: UUID изображения
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Изображение удалено
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Изображение не найдено
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Удалить изображение
+      tags:
+      - images
+    get:
+      description: Возвращает бинарный поток изображения. Файл скачивается автоматически.
+      parameters:
+      - description: UUID изображения
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Бинарные данные изображения
+          schema:
+            type: string
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Изображение не найдено
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получить изображение по id
+      tags:
+      - images
+    put:
+      consumes:
+      - application/octet-stream
+      description: Заменяет байты изображения по его id.
+      parameters:
+      - description: UUID изображения
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Новые байты изображения
+        in: body
+        name: image
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Изображение обновлено
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "400":
+          description: Некорректный UUID или пустое тело
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Изображение не найдено
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Изменить изображение
+      tags:
+      - images
+  /products:
+    get:
+      description: Возвращает товары с available_stock > 0. Поддерживает пагинацию.
+      parameters:
+      - description: Лимит
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список товаров (пустой массив, если нет доступных)
+          schema:
+            items:
+              $ref: '#/definitions/dto.ProductResponse'
+            type: array
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получить все доступные товары
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Создаёт товар. Если категории с таким именем нет — она создаётся.
+      parameters:
+      - description: Товар
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Товар создан
+          schema:
+            $ref: '#/definitions/dto.ProductResponse'
+        "400":
+          description: Некорректное тело запроса или ошибка валидации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Добавить товар
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      parameters:
+      - description: UUID товара
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Товар удалён
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Товар не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Удалить товар
+      tags:
+      - products
+    get:
+      parameters:
+      - description: UUID товара
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Товар найден
+          schema:
+            $ref: '#/definitions/dto.ProductResponse'
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Товар не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получить товар по id
+      tags:
+      - products
+  /products/{id}/image:
+    get:
+      description: Возвращает бинарный поток изображения, привязанного к товару. Файл
+        скачивается автоматически.
+      parameters:
+      - description: UUID товара
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Бинарные данные изображения
+          schema:
+            type: string
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Изображение не найдено
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получить изображение товара
+      tags:
+      - images
+  /products/{id}/stock:
+    patch:
+      consumes:
+      - application/json
+      description: Уменьшает available_stock на указанное число. Возвращает 400, если
+        товара недостаточно.
+      parameters:
+      - description: UUID товара
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Сколько вычесть
+        in: body
+        name: amount
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DecreaseStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Остаток обновлён
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "400":
+          description: Недостаточно товара, некорректный UUID или тело
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Товар не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Уменьшить количество товара
+      tags:
+      - products
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя через сервис авторизации и возвращает
+        JWT-токен.
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь создан, токен выдан
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+        "400":
+          description: Некорректное тело или ошибка валидации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Пользователь с таким email уже существует
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Ошибка сервиса авторизации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /reset:
+    post:
+      consumes:
+      - application/json
+      description: Запускает процедуру сброса пароля через сервис авторизации.
+      parameters:
+      - description: Email пользователя
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Запрос принят
+          schema:
+            $ref: '#/definitions/dto.StatusResponse'
+        "400":
+          description: Некорректное тело
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Ошибка сервиса авторизации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Восстановление пароля
+      tags:
+      - auth
+  /suppliers:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список поставщиков (пустой массив, если ничего нет)
+          schema:
+            items:
+              $ref: '#/definitions/dto.SupplierResponse'
+            type: array
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получить всех поставщиков
+      tags:
+      - suppliers
+    post:
+      consumes:
+      - application/json
+      description: Создаёт поставщика вместе с адресом.
+      parameters:
+      - description: Поставщик
+        in: body
+        name: supplier
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSupplierRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Поставщик создан
+          schema:
+            $ref: '#/definitions/dto.SupplierResponse'
+        "400":
+          description: Некорректное тело запроса или ошибка валидации
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Добавить поставщика
+      tags:
+      - suppliers
+  /suppliers/{id}:
+    delete:
+      description: Удаляет поставщика и его адрес. Если на поставщика ссылаются товары
+        — операция завершится ошибкой 500.
+      parameters:
+      - description: UUID поставщика
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Поставщик удалён
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Поставщик не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Удалить поставщика
+      tags:
+      - suppliers
+    get:
+      parameters:
+      - description: UUID поставщика
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Поставщик найден
+          schema:
+            $ref: '#/definitions/dto.SupplierResponse'
+        "400":
+          description: Некорректный UUID
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Поставщик не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Получить поставщика по id
+      tags:
+      - suppliers
+  /suppliers/{id}/address:
+    patch:
+      consumes:
+      - application/json
+      description: Заменяет адрес поставщика на новый.
+      parameters:
+      - description: UUID поставщика
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Новый адрес
+        in: body
+        name: address
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Адрес обновлён
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "400":
+          description: Некорректный UUID или тело запроса
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Поставщик не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Изменить адрес поставщика
+      tags:
+      - suppliers
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    description: JWT-токен в формате "Bearer <token>"
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
